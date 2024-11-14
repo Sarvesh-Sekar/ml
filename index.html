@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Recommendations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #e2e2e2;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Recommendations</h1>
+        <input type="number" id="customerId" placeholder="Enter customer ID" />
+        <button onclick="getRecommendations()">Get Recommendations</button>
+        <h2>Recommended Products:</h2>
+        <ul id="recommendationsList"></ul>
+    </div>
+    <script>
+        async function getRecommendations() {
+            const customerId = document.getElementById('customerId').value;
+            const response = await fetch(`http://127.0.0.1:5000/recommend?customer_id=${customerId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const recommendations = await response.json();
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = '';
+            recommendations.forEach(product => {
+                const li = document.createElement('li');
+                li.textContent = product;
+                recommendationsList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
