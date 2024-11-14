@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Health Classifier</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e8f0f2;
+            color: #2c3e50;
+            padding: 40px;
+            max-width: 700px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2980b9;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+        input[type="file"] {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 2px solid #2980b9;
+            border-radius: 4px;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3498db;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: none;
+            margin-top: 20px;
+            border: 2px solid #2980b9;
+            border-radius: 4px;
+        }
+        #loading {
+            display: none;
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+            color: #e67e22;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #2980b9;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            text-align: center;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Plant Health Classifier</h1>
+    <label for="imageInput">Upload Image:</label>
+    <input type="file" id="imageInput" accept="image/*" onchange="previewImage()" aria-describedby="imageHelp">
+    <button id="classifyButton" onclick="uploadImage()">Classify Image</button>
+    <div id="loading">Classifying...</div>
+    <img id="uploadedImage" src="" alt="Uploaded Image">
+    <div id="result"></div>
+</div>
+<script>
+    function previewImage() {
+        const input = document.getElementById('imageInput');
+        const file = input.files[0];
+        const imagePreview = document.getElementById('uploadedImage');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.style.display = 'none';
+        }
+    }
+
+    function uploadImage() {
+        const input = document.getElementById('imageInput');
+        const file = input.files[0];
+        const classifyButton = document.getElementById('classifyButton');
+        const loadingIndicator = document.getElementById('loading');
+        
+        if (!file) {
+            alert('Please select an image!');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        classifyButton.disabled = true; // Disable button
+        loadingIndicator.style.display = 'block'; // Show loading indicator
+
+        fetch('/classify', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(errorText => {
+                    throw new Error('Server responded with error: ' + errorText);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `Prediction: ${data.prediction === 0 ? 'Diseased' : 'Healthy Plant'}, Confidence: ${data.confidence}`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `Error: ${error.message}`;
+        })
+        .finally(() => {
+            classifyButton.disabled = false; // Re-enable button
+            loadingIndicator.style.display = 'none'; // Hide loading indicator
+        });
+    }
+</script>
+</body>
+</html>
