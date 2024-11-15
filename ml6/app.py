@@ -55,3 +55,6 @@ for movie in movies['title']:
     print(f"Movies similar to '{movie}':")
     print(recommend_movies(movie))
     print("\n" + "-"*30 + "\n")
+
+
+#pip install pandas scikit-learn
